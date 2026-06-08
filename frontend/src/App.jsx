@@ -3,15 +3,12 @@ import "./index.css";
 
 function App() {
   const [movie, setMovie] = useState("");
-  const [selectedMovie, setSelectedMovie] = useState("");
   const [recommendations, setRecommendations] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState("");
   const [message, setMessage] = useState("");
 
   const getRecommendations = async () => {
-    if (!movie.trim()) {
-      setMessage("Please enter a movie name");
-      return;
-    }
+    if (!movie.trim()) return;
 
     try {
       const response = await fetch(
@@ -23,47 +20,51 @@ function App() {
       if (!data.found) {
         setMessage("Movie not found");
         setRecommendations([]);
-        setSelectedMovie("");
         return;
       }
 
+      setMessage("");
       setSelectedMovie(data.selected_movie);
       setRecommendations(data.recommendations);
-      setMessage("");
     } catch (error) {
-      setMessage("Backend is not running");
+      setMessage("Backend not running");
     }
   };
 
   return (
     <div className="app">
-      <h1>Bollywood Movie Recommendation Engine</h1>
+      <h1>🎬 Bollywood Movie Recommender</h1>
 
-      <div className="search-box">
+      <div className="search-section">
         <input
           type="text"
           placeholder="Enter movie name..."
           value={movie}
           onChange={(e) => setMovie(e.target.value)}
         />
-
         <button onClick={getRecommendations}>Recommend</button>
       </div>
 
-      {message && <p className="message">{message}</p>}
+      {message && <p className="error">{message}</p>}
 
       {selectedMovie && (
-        <h2>Recommendations based on: {selectedMovie}</h2>
+        <h2 className="heading">
+          Recommendations based on: {selectedMovie}
+        </h2>
       )}
 
-      <div className="movie-list">
-        {recommendations.map((item, index) => (
-          <div className="movie-card" key={item.movieId}>
-            <h3>
-              {index + 1}. {item.title}
-            </h3>
-            <p>Genres: {item.genres}</p>
-            <p>Similarity Score: {item.score}</p>
+      <div className="movie-grid">
+        {recommendations.map((movie, index) => (
+          <div className="movie-card" key={movie.movieId}>
+            <div className="rank">{index + 1}</div>
+
+            <h3>{movie.title}</h3>
+
+            <p className="genres">{movie.genres}</p>
+
+            <p className="score">
+              Similarity Score: {movie.score}
+            </p>
           </div>
         ))}
       </div>
