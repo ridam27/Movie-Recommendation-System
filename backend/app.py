@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from recommender import MovieRecommender
 
-app = FastAPI()
+app = FastAPI(title="Movie Recommendation API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,18 +12,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-recommender = MovieRecommender("data/movies.csv")
+recommender = MovieRecommender("data/enriched_movies.csv")
 
 
 @app.get("/")
 def home():
-    return {"message": "Bollywood Movie Recommendation API is running"}
+    return {
+        "message": "Movie Recommendation API is running",
+        "dataset": "enriched_movies.csv"
+    }
 
 
 @app.get("/recommend")
-def recommend(movie: str = Query(...)):
+def recommend(movie: str = Query(..., min_length=1)):
     try:
-        result = recommender.recommend(movie, limit=5)
+        result = recommender.recommend(movie, limit=10)
 
         if result is None:
             return {
@@ -37,13 +40,15 @@ def recommend(movie: str = Query(...)):
 
         return {
             "found": True,
-            "selected_movie": str(selected_movie),
+            "selected_movie": selected_movie,
             "recommendations": recommendations
         }
 
     except Exception as e:
         return {
             "found": False,
+            "message": "Something went wrong",
             "error": str(e),
+            "selected_movie": None,
             "recommendations": []
         }
